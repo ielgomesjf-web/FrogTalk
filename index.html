@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#6d28d9">
+<title>FrogTalk</title>
+<link rel="icon" href="icone-192.png">
+<link rel="apple-touch-icon" href="icone-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FrogTalk">
+<link rel="stylesheet" href="style.css">
+<script>/* tema (antes de desenhar, pra não piscar branco) */ try { var tm = JSON.parse(localStorage.getItem('frogchat-tema')); if (tm) document.documentElement.dataset.tema = tm; } catch (e) {}</script>
+</head>
+<body>
+
+<!-- Tela de entrada: só o apelido -->
+<section id="entrada" class="tela escondido">
+  <form class="cartao" id="formEntrada">
+    <div class="logo">🐸</div>
+    <h1>FrogTalk</h1>
+    <p class="sub">Chat e call com a sua galera</p>
+    <label class="rotulo" for="campoApelido">Seu apelido</label>
+    <input id="campoApelido" class="campo" maxlength="24" placeholder="Ex.: Gomes" autocomplete="off" required>
+    <button class="bt grande">Entrar</button>
+  </form>
+</section>
+
+<!-- App -->
+<section id="app" class="tela escondido">
+  <aside id="lateral">
+    <header class="topo-lateral">
+      <span class="marca">🐸 FrogTalk</span>
+      <span class="conexao"><span id="statusTexto">conectando…</span><span id="status" class="status"></span>
+        <button id="btTema" class="bt-icone tema" title="Tema escuro / claro">🌙</button></span>
+    </header>
+    <nav class="abas">
+      <button class="aba ativa" data-aba="conversas">💬 Conversas</button>
+      <button class="aba" data-aba="status">⭕ Status <span id="badgeStatus" class="ponto escondido"></span></button>
+    </nav>
+
+    <div id="abaConversas" class="aba-corpo">
+      <div class="acoes-lateral">
+        <button id="btAmigo" class="bt">+ Amigo</button>
+        <button id="btNova" class="bt claro">+ Grupo</button>
+        <button id="btCodigo" class="bt claro" title="Entrar num grupo com código">🔑 Código</button>
+      </div>
+      <div id="bannerNotif" class="banner-notif escondido">
+        <span>🔔 Ativa as notificações pra saber quando te chamarem, mesmo com o FrogTalk minimizado.</span>
+        <div><button id="btAtivarNotif" class="bt mini">Ativar</button><button id="btFecharNotif" class="bt claro mini" title="Agora não">✕</button></div>
+      </div>
+      <div id="bannerInstalar" class="banner-notif instalar escondido">
+        <span>📲 Instale o FrogTalk como aplicativo: ganha o ícone do sapo e abre sem a barra do navegador.</span>
+        <div><button id="btInstalar" class="bt mini">Instalar</button><button id="btFecharInstalar" class="bt claro mini" title="Agora não">✕</button></div>
+      </div>
+      <div id="pedidos"></div>
+      <ul id="listaSalas"></ul>
+    </div>
+
+    <div id="abaStatus" class="aba-corpo escondido">
+      <div id="meuStatus" class="sala meu-status"></div>
+      <div class="acoes-lateral">
+        <button id="btStatusTexto" class="bt claro">✏️ Texto</button>
+        <button id="btStatusFoto" class="bt claro">📷 Foto</button>
+      </div>
+      <div class="titulo-secao">Recentes</div>
+      <ul id="listaStatus"></ul>
+    </div>
+
+    <button id="btPerfil" class="eu-rodape" title="Perfil e contas">
+      <span id="meuAvatar"></span>
+      <span class="eu-info"><span class="eu-nome" id="meuNome"></span><span class="eu-num" id="meuNum"></span></span>
+      <span class="eu-editar">⇄<span id="qtdContas" class="badge escondido"></span></span>
+    </button>
+  </aside>
+
+  <main id="principal">
+    <div id="vazio" class="vazio">
+      <div class="logo">🐸</div>
+      <h2>Bora conversar!</h2>
+      <p>Adicione um amigo pelo número dele, crie um grupo<br>ou entre num grupo com o código que te mandaram.</p>
+    </div>
+
+    <div id="chat" class="escondido">
+      <header class="topo-chat">
+        <button id="btVoltar" class="bt-icone voltar" title="Voltar">←</button>
+        <div id="avSala" class="av-topo"></div>
+        <div class="titulo">
+          <div id="nomeSala"></div>
+          <div id="onlineSala" class="online"></div>
+        </div>
+        <button id="btCall" class="bt-icone" title="Call de voz">📞</button>
+        <button id="btChamar" class="bt-icone" title="Chamar (a pessoa recebe um alerta)">🔔</button>
+        <button id="btConvidar" class="bt-icone" title="Convidar amigos">👥</button>
+        <button id="btConfig" class="bt-icone escondido" title="Configurações do grupo">⚙️</button>
+        <button id="btSairSala" class="bt-icone" title="Sair da sala">🚪</button>
+      </header>
+
+      <div id="barraCall" class="barra-call escondido">
+        <div class="call-info">
+          <span class="call-titulo">🔊 Call</span>
+          <div id="pessoasCall" class="pessoas-call"></div>
+        </div>
+        <div class="botoes-call">
+          <button id="btEntrarCall" class="bt verde">Entrar na call</button>
+          <button id="btMudo" class="bt claro">🎤 Mutar</button>
+          <button id="btTela" class="bt claro escondido">🖥️ Tela</button>
+          <button id="btCamera" class="bt claro escondido">📷 Câmera</button>
+          <button id="btVerPalco" class="bt claro escondido" title="Ver a tela">📺</button>
+          <button id="btDesligar" class="bt vermelho">Sair da call</button>
+        </div>
+        <div id="emojisCall" class="emojis-call escondido"></div>
+      </div>
+
+      <div id="palco" class="palco escondido">
+        <video id="videoPalco" autoplay playsinline muted></video>
+        <div id="miniaturas" class="miniaturas escondido"></div>
+        <div class="palco-topo"><span id="nomePalco"></span>
+          <button id="btPararTelaPalco" class="bt vermelho mini">⏹️ Parar</button>
+          <button id="btVirarCamera" class="bt-icone escondido" title="Trocar câmera (frente / trás)">🔄</button>
+          <button id="btTelaCheia" class="bt-icone" title="Tela cheia">⛶</button>
+          <button id="btFecharPalco" class="bt-icone" title="Esconder">✕</button>
+        </div>
+      </div>
+
+      <div class="area-msgs">
+        <div id="mensagens" class="mensagens"></div>
+        <button id="btDescer" class="bt-descer escondido" title="Ir pro fim">⬇<span id="novasDescer" class="badge escondido"></span></button>
+      </div>
+      <div id="digitando" class="digitando"></div>
+
+      <div id="painelFig" class="painel-fig escondido">
+        <div class="abas-fig">
+          <button data-fig="sapos" class="ativa">🐸 Sapos</button>
+          <button data-fig="bw">⚔️ BATTLE WISH</button>
+          <button data-fig="minhas">⭐ Minhas</button>
+        </div>
+        <div id="gradeFig" class="grade-fig"></div>
+      </div>
+      <div id="semPermissao" class="sem-permissao escondido"></div>
+      <div id="barraResposta" class="barra-resposta escondido">
+        <div class="citacao"><b id="respNome"></b><span id="respTexto"></span></div>
+        <button type="button" id="btCancelaResp" class="bt-icone escuro" title="Cancelar resposta">✕</button>
+      </div>
+      <div id="barraGravacao" class="barra-gravacao escondido">
+        <button type="button" id="btCancelaVoz" class="bt-icone escuro" title="Jogar fora">🗑️</button>
+        <span class="ponto-rec"></span><span id="tempoGravacao">0:00</span>
+        <div id="ondasGravacao" class="ondas-gravacao"></div>
+        <button type="button" id="btEnviaVoz" class="bt-enviar" title="Enviar áudio">➤</button>
+      </div>
+      <form id="formMsg" class="caixa">
+        <button type="button" id="btFig" class="bt-icone escuro" title="Figurinhas">🙂</button>
+        <button type="button" id="btAnexo" class="bt-icone escuro" title="Mandar foto, vídeo ou arquivo">📎</button>
+        <textarea id="campoMsg" rows="1" maxlength="2000" placeholder="Escreva uma mensagem…"></textarea>
+        <button id="btEnviar" class="bt-enviar escondido" title="Enviar" aria-label="Enviar">➤</button>
+        <button type="button" id="btMic" class="bt-enviar" title="Gravar áudio" aria-label="Gravar áudio">🎤</button>
+      </form>
+    </div>
+  </main>
+</section>
+
+<div id="visor" class="visor escondido"></div>
+<div id="menuMsg" class="menu-msg escondido"></div>
+<div id="avisos"></div>
+<div id="audios" hidden></div>
+
+<script src="vendor/mqtt.min.js"></script>
+<script src="figurinhas_bw.js"></script>
+<script src="figurinhas.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
